@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carteira de Vacinação Digital</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topo">
+    <div class="topo-conteudo">
+      <span class="topo-icone">&#128137;</span>
+      <div>
+        <h1>Carteira de Vacinação</h1>
+        <p class="topo-sub">Acompanhe as vacinas do calendário nacional (0 a 4 anos)</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ============ TELA 1: USUÁRIO (cadastro + busca) ============ -->
+    <section id="telaUsuario" class="tela">
+
+      <div class="cartoes-acao">
+
+        <!-- Buscar carteira existente -->
+        <div class="cartao">
+          <h2>Já tenho cadastro</h2>
+          <p class="cartao-desc">Digite o CPF para abrir a carteira.</p>
+          <label for="inputCpfBusca">CPF</label>
+          <input type="text" id="inputCpfBusca" placeholder="Somente números (11 dígitos)" maxlength="11">
+          <button class="btn btn-primario" onclick="buscarCarteira()">Abrir carteira</button>
+        </div>
+
+        <!-- Cadastrar novo usuário -->
+        <div class="cartao">
+          <h2>Sou novo aqui</h2>
+          <p class="cartao-desc">Cadastre-se para iniciar sua carteira.</p>
+          <label for="inputCPF">CPF</label>
+          <input type="text" id="inputCPF" placeholder="Somente números (11 dígitos)" maxlength="11">
+          <label for="inputNome">Nome</label>
+          <input type="text" id="inputNome" placeholder="Nome completo">
+          <label for="inputDataNasc">Data de nascimento</label>
+          <input type="date" id="inputDataNasc">
+          <label for="inputCEP">CEP</label>
+          <input type="text" id="inputCEP" placeholder="Somente números (8 dígitos)" maxlength="8">
+          <button class="btn btn-primario" onclick="cadastrarUsuario()">Cadastrar</button>
+        </div>
+      </div>
+
+      <p id="mensagemUsuario" class="mensagem"></p>
+    </section>
+
+    <!-- ============ TELA 2: CARTEIRA ============ -->
+    <section id="telaCarteira" class="tela" style="display:none;">
+
+      <button class="btn btn-voltar" onclick="mostrarTela('telaUsuario')">&#8592; Voltar</button>
+
+      <div class="carteira-cabecalho">
+        <h2>Carteira de <span id="carteiraNome">—</span></h2>
+        <span id="carteiraLocal" class="carteira-local"></span>
+      </div>
+
+      <!-- Botões de ação da carteira -->
+      <div class="acoes-carteira">
+        <button class="btn btn-secundario" onclick="alternarEdicao()">Editar cadastro</button>
+        <button class="btn btn-secundario" onclick="alternarCobertura()">Cobertura por cidade</button>
+      </div>
+
+      <!-- Caixa de edição (PUT) -->
+      <div id="boxEdicao" class="cartao" style="display:none;">
+        <h3>Editar cadastro</h3>
+        <p class="cartao-desc">Preencha só o que quiser alterar. Mudar o CEP reconsulta o endereço.</p>
+        <div class="form-linha">
+          <div>
+            <label for="editNome">Novo nome</label>
+            <input type="text" id="editNome" placeholder="Deixe em branco para manter">
+          </div>
+          <div>
+            <label for="editDataNasc">Nova data de nascimento</label>
+            <input type="date" id="editDataNasc">
+          </div>
+          <div>
+            <label for="editCEP">Novo CEP</label>
+            <input type="text" id="editCEP" placeholder="8 dígitos" maxlength="8">
+          </div>
+        </div>
+        <button class="btn btn-primario" onclick="editarUsuario()">Salvar alterações</button>
+      </div>
+
+      <!-- Caixa de cobertura por cidade (GET relatório) -->
+      <div id="boxCobertura" class="cartao" style="display:none;">
+        <h3>Cobertura vacinal por cidade</h3>
+        <p class="cartao-desc">Percentual de doses em dia entre as que já deveriam ter sido aplicadas.</p>
+        <div id="relatorioCobertura" class="tabela-wrap"></div>
+      </div>
+
+      <!-- Contadores (cards) -->
+      <div class="resumo">
+        <div class="resumo-item resumo-emdia">
+          <span class="resumo-numero" id="contadorEmDia">0</span>
+          <span class="resumo-rotulo">Em dia</span>
+        </div>
+        <div class="resumo-item resumo-atrasada">
+          <span class="resumo-numero" id="contadorAtrasadas">0</span>
+          <span class="resumo-rotulo">Atrasadas</span>
+        </div>
+        <div class="resumo-item resumo-futura">
+          <span class="resumo-numero" id="contadorFuturas">0</span>
+          <span class="resumo-rotulo">Futuras</span>
+        </div>
+      </div>
+
+      <!-- Formulário para registrar uma dose -->
+      <div class="cartao cartao-registrar">
+        <h3>Registrar uma dose</h3>
+        <div class="form-linha">
+          <div>
+            <label for="inputCalendarioId">Vacina (id do calendário)</label>
+            <input type="number" id="inputCalendarioId" placeholder="Ex.: 3">
+          </div>
+          <div>
+            <label for="inputDataDose">Data da aplicação</label>
+            <input type="date" id="inputDataDose">
+          </div>
+          <div>
+            <label for="inputLote">Lote</label>
+            <input type="text" id="inputLote" placeholder="Ex.: ABC123">
+          </div>
+          <div>
+            <label for="inputLaboratorio">Laboratório</label>
+            <input type="text" id="inputLaboratorio" placeholder="Ex.: Butantan">
+          </div>
+          <div>
+            <label for="inputUnidade">Unidade de saúde</label>
+            <input type="text" id="inputUnidade" placeholder="Ex.: UBS Centro">
+          </div>
+        </div>
+        <button class="btn btn-primario" onclick="registrarDose()">Registrar dose</button>
+      </div>
+
+      <!-- Tabela das 26 vacinas -->
+      <div class="tabela-wrap">
+        <table class="tabela">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Vacina</th>
+              <th>Dose</th>
+              <th>Recom. (meses)</th>
+              <th>Status</th>
+              <th>Data da dose</th>
+              <th>Lote</th>
+              <th>Laboratório</th>
+              <th>Unidade</th>
+              <th>Deletar</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaDoses"></tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
